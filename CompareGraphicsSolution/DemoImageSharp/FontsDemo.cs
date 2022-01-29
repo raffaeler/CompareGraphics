@@ -30,6 +30,8 @@ namespace DemoImageSharp
             _bitmap?.Dispose();
         }
 
+        public void Clear() => _bitmap = new Image<Rgba32>(Width, Height, Color.White);
+
         public void Initialize(int width, int height)
         {
             Width = width;

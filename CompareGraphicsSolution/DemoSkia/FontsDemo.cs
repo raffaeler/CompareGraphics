@@ -47,6 +47,8 @@ namespace DemoSkia
             _canvas.Clear(SKColors.White);
         }
 
+        public void Clear() => _canvas?.Clear(SKColors.White);
+
         /// <summary>
         /// Returns the system fonts 
         /// initialized at the given size
@@ -116,7 +118,7 @@ namespace DemoSkia
             foreach(var f in _fonts.Values)
             {
                 var height = f.fontInfo.Height;
-                if (drawStrategy == DrawStrategy.NativeAndFallbackToIoT) height += f.fontInfo.ExtraHeight;
+                if (drawStrategy == DrawStrategy.Native) height += f.fontInfo.ExtraHeight;
 
                 var y = top + count * (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
@@ -124,14 +126,11 @@ namespace DemoSkia
                 var yOff = f.font == null ? 0 : ((int)-f.font.Metrics.Ascent + (int)f.font.Metrics.Descent + y);
                 if (f.bdfFont == null)
                     _canvas.DrawText(text, x, yOff, f.font, _paint);
-                else if (drawStrategy == DrawStrategy.NativeAndFallbackToIoT)
-                    _canvas.DrawText(text, x, yOff, f.font, _paint);
+                else if (drawStrategy == DrawStrategy.Native)
+                    _canvas.DrawText(text, x, y + f.fontInfo.ExtraHeight, f.font, _paint);
                 else if (f.bdfFont != null)
                 {
-                    //var ybdfOff = -f.bdfFont.Height + f.bdfFont.YDisplacement + y;
-                    //var ybdfOff = +f.bdfFont.Height - f.bdfFont.YDisplacement + y;
-                    var ybdfOff = y;
-                    DrawText(x, ybdfOff, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
+                    DrawText(x, y, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
                 }
                 count++;
             }

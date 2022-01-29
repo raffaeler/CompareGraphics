@@ -34,6 +34,8 @@ namespace DemoSystemDrawingCommon
             _bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
         }
 
+        public void Clear() => _bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
+
         /// <summary>
         /// Returns the system fonts 
         /// initialized at the given size

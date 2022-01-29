@@ -9,6 +9,6 @@ namespace Common
     public enum DrawStrategy
     {
         IoTBdfFont,
-        NativeAndFallbackToIoT,
+        Native,
     }
 }
