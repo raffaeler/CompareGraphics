@@ -84,7 +84,7 @@ namespace DemoImageSharp
         /// <summary>
         /// Draw to the canvas and save the result to a png file
         /// </summary>
-        public void DrawTo(string extraText, string targetFilename)
+        public void DrawTo(DrawStrategy drawStrategy, string extraText, string targetFilename)
         {
             if (_bitmap == null) return;
 
@@ -93,7 +93,7 @@ namespace DemoImageSharp
             int count = 0;
             foreach (var f in _fonts.Values)
             {
-                var height = f.fontInfo.Height + f.fontInfo.ExtraHeight;
+                var height = f.fontInfo.Height;// + f.fontInfo.ExtraHeight;
                 var y = top + count * (height + 10);
 
                 var text = $"{f.fontInfo.Name} - {extraText}";

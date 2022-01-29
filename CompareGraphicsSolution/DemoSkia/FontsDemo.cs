@@ -14,8 +14,11 @@ namespace DemoSkia
     {
         private SKBitmap? _bitmap;
         private SKCanvas? _canvas;
-        private Dictionary<string, (SKFont font, FontInfo fontInfo)> _fonts = new();
+        private Dictionary<string, (SKFont? font, IoTBdfFont? bdfFont, FontInfo fontInfo)> _fonts = new();
         private SKPaint? _paint;
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         public void Dispose()
         {
@@ -25,6 +28,9 @@ namespace DemoSkia
 
         public void Initialize(int width, int height)
         {
+            Width = width;
+            Height = height;
+
             if (SKFontManager.Default.FontFamilies.Count() == 0)
                 throw new Exception($"Invalid native assets, possibly missing the SkiaSharp.NativeAssets.Linux assembly");
 
@@ -70,11 +76,12 @@ namespace DemoSkia
             if (fontInfo.FontFamilyName != null)
             {
                 var typeface = SKTypeface.FromFamilyName(fontInfo.FontFamilyName);
-                _fonts[fontInfo.FontFamilyName] = (new SKFont(typeface, fontInfo.Height), fontInfo);
+                _fonts[fontInfo.FontFamilyName] = (new SKFont(typeface, fontInfo.Height), default, fontInfo);
                 return;
             }
             else if(fontInfo.FontFileName != null)
             {
+                var bdf = IoTBdfFont.Load(fontInfo.FontFileName);
                 var typeface = SKTypeface.FromFile(fontInfo.FontFileName);
                 var font = new SKFont(typeface)
                 {
@@ -82,10 +89,11 @@ namespace DemoSkia
                     //Hinting = SKFontHinting.Full,
                     //Subpixel = true,
                     //BaselineSnap = true,
+                    
                     Size = fontInfo.Height + fontInfo.ExtraHeight,
                 };
 
-                _fonts[fontInfo.FontFileName] = (font, fontInfo);
+                _fonts[fontInfo.FontFileName] = (font, bdf, fontInfo);
                 return;
             }
 
@@ -95,7 +103,7 @@ namespace DemoSkia
         /// <summary>
         /// Draw to the canvas and save the result to a png file
         /// </summary>
-        public void DrawTo(string extraText, string targetFilename)
+        public void DrawTo(DrawStrategy drawStrategy, string extraText, string targetFilename)
         {
             if (_canvas == null) return;
 
@@ -107,7 +115,13 @@ namespace DemoSkia
                 var height = f.fontInfo.Height + f.fontInfo.ExtraHeight;
                 var y = top + count * (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
-                _canvas.DrawText(text, x, y, f.font, _paint);
+
+                if (f.bdfFont == null)
+                    _canvas.DrawText(text, x, y, f.font, _paint);
+                else if (drawStrategy == DrawStrategy.NativeAndFallbackToIoT)
+                    _canvas.DrawText(text, x, y, f.font, _paint);
+                else if (f.bdfFont != null)
+                    DrawText(x, y, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
                 count++;
             }
 
@@ -116,6 +130,73 @@ namespace DemoSkia
                 _bitmap?.Encode(sKFileWStream, SKEncodedImageFormat.Png, 50);
             }
         }
+
+
+        public void DrawText(int x, int y, ReadOnlySpan<char> text, IoTBdfFont font, byte textR, byte textG, byte textB,
+            byte bkR, byte bkG, byte bkB, bool backBuffer = false)
+        {
+            int charWidth = font.Width;
+            int totalTextWith = charWidth * text.Length;
+
+            if (y <= -font.Height || y >= Height || x >= Width || x + totalTextWith <= 0)
+            {
+                return;
+            }
+
+            //byte[] buffer = backBuffer ? _colorsBackBuffer : _colorsBuffer;
+
+            int index = 0;
+            while (index < text.Length)
+            {
+                if (x + charWidth < 0)
+                {
+                    x += charWidth;
+                    index++;
+                    continue;
+                }
+
+                DrawChar(x, y, text[index], font, textR, textG, textB, bkR, bkG, bkB);
+
+                x += charWidth;
+                index++;
+            }
+        }
+
+        private void DrawChar(int x, int y, char c, IoTBdfFont font, byte textR, byte textG, byte textB, byte bkR,
+            byte bkG, byte bkB)
+        {
+            if (_bitmap == null) return;
+
+            int hightToDraw = Math.Min(Height - y, font.Height);
+            int firstColumnToDraw = x < 0 ? Math.Abs(x) : 0;
+            int lastColumnToDraw = x + font.Width > Width ? Width - x : font.Width;
+
+            font.GetCharData(c, out ReadOnlySpan<ushort> charData);
+
+            int b = 8 * (sizeof(ushort) - (int)Math.Ceiling(((double)font.Width) / 8)) + firstColumnToDraw;
+
+            for (int j = firstColumnToDraw; j < lastColumnToDraw; j++)
+            {
+                for (int i = 0; i < hightToDraw; i++)
+                {
+                    int value = charData[i] << (b + j - firstColumnToDraw);
+
+                    if ((value & 0x8000) != 0)
+                    {
+                        var color = new SKColor(textR, textG, textB, 255);
+                        _bitmap?.SetPixel(x + j, y + i, color);
+                        //SetPixel(x + j, y + i, textR, textG, textB, buffer);
+                    }
+                    else
+                    {
+                        var color = new SKColor(bkR, bkG, bkB, 255);
+                        _bitmap?.SetPixel(x + j, y + i, color);
+                        //SetPixel(x + j, y + i, bkR, bkG, bkB, buffer);
+                    }
+                }
+            }
+        }
+
 
 
     }

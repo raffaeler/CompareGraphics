@@ -80,7 +80,7 @@ namespace DemoSystemDrawingCommon
         /// <summary>
         /// Draw to the canvas and save the result to a png file
         /// </summary>
-        public void DrawTo(string extraText, string targetFilename)
+        public void DrawTo(DrawStrategy drawStrategy, string extraText, string targetFilename)
         {
             if (_bitmap == null) return;
 
@@ -96,7 +96,7 @@ namespace DemoSystemDrawingCommon
             int count = 0;
             foreach (var f in _fonts.Values)
             {
-                var height = f.fontInfo.Height + f.fontInfo.ExtraHeight;
+                var height = f.fontInfo.Height;// + f.fontInfo.ExtraHeight;
                 var y = top + count * (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
                 DrawText(x, y, text, f.font, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF);
