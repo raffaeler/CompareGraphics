@@ -19,6 +19,12 @@ namespace DemoImageSharp
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public FontsDemo()
+        {
+            if (SystemFonts.Families.Count() == 0)
+                throw new Exception($"Invalid native assets, possibly missing the SkiaSharp.NativeAssets.Linux assembly");
+        }
+
         public void Dispose()
         {
             _bitmap?.Dispose();
@@ -28,9 +34,6 @@ namespace DemoImageSharp
         {
             Width = width;
             Height = height;
-
-            if (SystemFonts.Families.Count() == 0)
-                throw new Exception($"Invalid native assets, possibly missing the SkiaSharp.NativeAssets.Linux assembly");
 
             _bitmap = new Image<Rgba32>(width, height, Color.White);
         }

@@ -15,10 +15,21 @@ namespace DemoSkia
         private SKBitmap? _bitmap;
         private SKCanvas? _canvas;
         private Dictionary<string, (SKFont? font, IoTBdfFont? bdfFont, FontInfo fontInfo)> _fonts = new();
-        private SKPaint? _paint;
+        private SKPaint _paint;
 
         public int Width { get; private set; }
         public int Height { get; private set; }
+
+        public FontsDemo()
+        {
+            if (SKFontManager.Default.FontFamilies.Count() == 0)
+                throw new Exception($"Invalid native assets, possibly missing the SkiaSharp.NativeAssets.Linux assembly");
+
+            _paint = new SKPaint()
+            {
+                Color = SKColors.Black
+            };
+        }
 
         public void Dispose()
         {
@@ -30,14 +41,6 @@ namespace DemoSkia
         {
             Width = width;
             Height = height;
-
-            if (SKFontManager.Default.FontFamilies.Count() == 0)
-                throw new Exception($"Invalid native assets, possibly missing the SkiaSharp.NativeAssets.Linux assembly");
-
-            _paint = new SKPaint()
-            {
-                Color = SKColors.Black
-            };
 
             _bitmap = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
             _canvas = new SKCanvas(_bitmap);
@@ -112,16 +115,24 @@ namespace DemoSkia
             int count = 0;
             foreach(var f in _fonts.Values)
             {
-                var height = f.fontInfo.Height + f.fontInfo.ExtraHeight;
+                var height = f.fontInfo.Height;
+                if (drawStrategy == DrawStrategy.NativeAndFallbackToIoT) height += f.fontInfo.ExtraHeight;
+
                 var y = top + count * (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
 
+                var yOff = f.font == null ? 0 : ((int)-f.font.Metrics.Ascent + (int)f.font.Metrics.Descent + y);
                 if (f.bdfFont == null)
-                    _canvas.DrawText(text, x, y, f.font, _paint);
+                    _canvas.DrawText(text, x, yOff, f.font, _paint);
                 else if (drawStrategy == DrawStrategy.NativeAndFallbackToIoT)
-                    _canvas.DrawText(text, x, y, f.font, _paint);
+                    _canvas.DrawText(text, x, yOff, f.font, _paint);
                 else if (f.bdfFont != null)
-                    DrawText(x, y, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
+                {
+                    //var ybdfOff = -f.bdfFont.Height + f.bdfFont.YDisplacement + y;
+                    //var ybdfOff = +f.bdfFont.Height - f.bdfFont.YDisplacement + y;
+                    var ybdfOff = y;
+                    DrawText(x, ybdfOff, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
+                }
                 count++;
             }
 
