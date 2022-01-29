@@ -37,7 +37,7 @@ imageSharp.AddFont(imageSharp.GetFonts(8).First(fontFilter));
 imageSharp.AddFonts(fonts);
 imageSharp.DrawTo(demoText, "results/imageSharp.png");
 
-
+// This will only work on Windows
 using var sysDrawing = new DemoImageSharp.FontsDemo();
 sysDrawing.Initialize(sizeX, sizeY);
 sysDrawing.AddFont(sysDrawing.GetFonts(8).First(fontFilter));

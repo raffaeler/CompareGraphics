@@ -10,11 +10,8 @@ namespace DemoSystemDrawingCommon
 {
     public class FontsDemo : IFontsDemo, IDisposable
     {
-        //InstalledFontCollection _systemFonts;
         private Bitmap? _bitmap;
-        //private SKCanvas? _canvas;
         private Dictionary<string, (IoTBdfFont font, FontInfo fontInfo)> _fonts = new();
-        //private SKPaint? _paint;
 
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -26,7 +23,6 @@ namespace DemoSystemDrawingCommon
 
         public void Dispose()
         {
-            //_canvas?.Dispose();
             _bitmap?.Dispose();
         }
 
@@ -34,14 +30,8 @@ namespace DemoSystemDrawingCommon
         {
             Width = width;
             Height = height;
-            //_paint = new SKPaint()
-            //{
-            //    Color = SKColors.Black
-            //};
 
-            _bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            //_canvas = new SKCanvas(_bitmap);
-            //_canvas.Clear(SKColors.White);
+            _bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
         }
 
         /// <summary>
@@ -93,7 +83,7 @@ namespace DemoSystemDrawingCommon
         public void DrawTo(string extraText, string targetFilename)
         {
             if (_bitmap == null) return;
-            //if (_canvas == null) return;
+
             using Graphics g = Graphics.FromImage(_bitmap);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -115,10 +105,6 @@ namespace DemoSystemDrawingCommon
 
             g.Flush();
             _bitmap.Save(targetFilename, ImageFormat.Png);
-            //using (var sKFileWStream = new SKFileWStream(targetFilename))
-            //{
-            //    _bitmap.Encode(sKFileWStream, SKEncodedImageFormat.Png, 50);
-            //}
         }
 
 
