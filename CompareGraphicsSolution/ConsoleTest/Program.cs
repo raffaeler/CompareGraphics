@@ -11,9 +11,9 @@ var fontFiles = FontsHelper.GetBdfFontFiles();
 
 var extraHeights = new Dictionary<string, int>()
 {
-    //{ "4x6", 2 },
-    //{ "5x7", 2 },
-    //{ "spleen-5x8", 3 },
+    { "4x6", 2 },
+    { "5x7", 2 },
+    { "spleen-5x8", 3 },
 };
 
 IReadOnlyCollection<FontInfo> fonts = fontFiles
