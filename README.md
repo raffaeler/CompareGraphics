@@ -17,3 +17,44 @@ Excluded libraries:
 
 This restricts the list to [SkiaSharp](https://github.com/mono/SkiaSharp) and [ImageSharp](https://github.com/SixLabors/ImageSharp). The comparison includes `System.Drawing.Common` to evaluate the differences with the current dotnet/iot libraries.
 
+## Test results run on Windows
+
+The three libraries are:
+
+* `System.Drawing.Common`. No native `BDF` support
+* `SixLabors.ImageSharp`. No native BDF support
+* `SkiaSharp`. Native BDF fonts are supported
+
+The `IoTBdfFont` in the `Common` assembly was taken from the https://github.com/dotnet/iot repository to ensure the results are consistent with the current code. This allows comparing the current status with the SkiaSharp native support.
+
+The first comparison is between `System.Drawing.Common` and `SixLabors.ImageSharp`. Since the use the same code, the results are exactly the same (pixel perfect). See the code to evaluate the verbosity difference.
+
+This restrict the comparison to just `SixLabors.ImageSharp` and `SkiaSharp` which I did with the native support or the BDF library. I compared the images using the [Guiffy tool](https://www.guiffy.com/).
+
+### Left: SkiaSharp rendering with BDF class. Right: ImageSharp rendering with BDF class
+
+![Comparison](images/README/SkiaSharp-ImageSharp-CustomCode.png)
+
+The black upper part shows the differences highlighted as a heat map. The Windows "Cascadia" system font is rendered slightly different while the other does not appear in the heat map as they are exactly the same (which is obvious).
+
+### Left: SkiaSharp rendering with native support. Right: ImageSharp rendering with BDF class
+
+![Comparison](images/README/SkiaSharpNative-ImageSharp-CustomCode.png)
+
+Personal evaluation:
+
+* The SkiaSharp support for BDF is poor. I was said by A.J.Bauer (who provided the SkiaSharp code) that it depends on the C# wrapper. Probably an old version of the library has been packaged.
+* The system fonts rendering is slightly different. IMO the SkiaSharp rendering is slightly more readable, but it is debatable.
+
+* The rendering done using the BDF code in this repo is pixel perfect for SkiaSharp and ImageSharp. There are no differences at all.
+
+* The ImageSharp packages `SixLabors.Fonts` and `SixLabors.ImageSharp.Drawing` only exists in pre-release on nuget. This is disappointing.
+
+* SixLabors provides two distribution: one is free and the other is for payment. It is not the first time a free library changes its license to migrate to a paid one.
+
+## Test results run on Linux-arm
+
+I will soon run these test on a real Raspberry Pi to see if there is any difference.
+
+
+
