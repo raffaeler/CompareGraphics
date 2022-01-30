@@ -1,4 +1,6 @@
-﻿using Common;
+﻿//#define RUNSYSTEMDRAWING
+//#define RUNORIGINALSKIASHARPCODE
+using Common;
 
 using ConsoleTest;
 
@@ -57,7 +59,7 @@ imageSharp.AddFont(imageSharp.GetFonts(8).First(fontFilter));
 imageSharp.AddFonts(fonts);
 imageSharp.DrawTo(DrawStrategy.IoTBdfFont, demoText, "results/imageSharp.png");
 
-// This will only work on Windows
+#if RUNSYSTEMDRAWING
 using var sysDrawing = new DemoSystemDrawingCommon.FontsDemo();
 sysDrawing.Initialize(sizeX, sizeY);
 sysDrawing.AddFont(new FontInfo()
@@ -69,10 +71,12 @@ sysDrawing.AddFont(new FontInfo()
 });
 sysDrawing.AddFonts(fonts);
 sysDrawing.DrawTo(DrawStrategy.IoTBdfFont, demoText, "results/sysDrawing.png");
+#endif
 
+#if RUNORIGINALSKIASHARPCODE
 DemoSkia.OldDemo d = new();
 d.Run("results/skia-original.png");
-
+#endif
 
 // Compare the results with this tool:
 // https://www.guiffy.com/Image-Diff-Tool.html
