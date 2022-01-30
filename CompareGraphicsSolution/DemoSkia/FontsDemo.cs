@@ -113,14 +113,13 @@ namespace DemoSkia
             if (_canvas == null) return;
 
             int x = 10;
-            int top = 10;
-            int count = 0;
+            int y = 10;
             foreach(var f in _fonts.Values)
             {
                 var height = f.fontInfo.Height;
                 if (drawStrategy == DrawStrategy.Native) height += f.fontInfo.ExtraHeight;
 
-                var y = top + count * (height + 10);
+                y = y + (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
 
                 var yOff = f.font == null ? 0 : ((int)-f.font.Metrics.Ascent + (int)f.font.Metrics.Descent + y);
@@ -132,7 +131,6 @@ namespace DemoSkia
                 {
                     DrawText(x, y, text, f.bdfFont, 0, 0, 0, 255, 255, 255);
                 }
-                count++;
             }
 
             using (var sKFileWStream = new SKFileWStream(targetFilename))

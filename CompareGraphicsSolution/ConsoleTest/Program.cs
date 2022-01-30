@@ -3,7 +3,7 @@
 using ConsoleTest;
 
 var resultsDir = new DirectoryInfo("results");
-if(!resultsDir.Exists) resultsDir.Create();
+if (!resultsDir.Exists) resultsDir.Create();
 
 var fontFiles = FontsHelper.GetBdfFontFiles();
 //foreach (var fontFile in fontFiles)
@@ -21,12 +21,27 @@ var extraHeights = new Dictionary<string, int>()
 
 IReadOnlyCollection<FontInfo> fonts = fontFiles
     .Select(f => FontInfo.CreateByFileName(f.FullName, extraHeights))
+    .OrderBy(f => f.Height)
     .ToList();
 
 var demoText = "abcdefgABCDEFG 0123456789 - . , :";
 var sizeX = 320;
 var sizeY = 200;
-Func<FontInfo, bool> fontFilter = f => f.Name.StartsWith("Cascadia");
+string fontName;
+if (OperatingSystem.IsWindows())
+{
+    fontName = "Cascadia Code";
+}
+else if (OperatingSystem.IsLinux())
+{
+    fontName = "Liberation Mono";
+}
+else
+{
+    throw new Exception("This test runs only on Windows or Linux");
+}
+
+Func<FontInfo, bool> fontFilter = f => f.Name.StartsWith(fontName);
 
 using var skia = new DemoSkia.FontsDemo();
 skia.Initialize(sizeX, sizeY);
@@ -43,9 +58,15 @@ imageSharp.AddFonts(fonts);
 imageSharp.DrawTo(DrawStrategy.IoTBdfFont, demoText, "results/imageSharp.png");
 
 // This will only work on Windows
-using var sysDrawing = new DemoImageSharp.FontsDemo();
+using var sysDrawing = new DemoSystemDrawingCommon.FontsDemo();
 sysDrawing.Initialize(sizeX, sizeY);
-sysDrawing.AddFont(sysDrawing.GetFonts(8).First(fontFilter));
+sysDrawing.AddFont(new FontInfo()
+{
+    Name = fontName,
+    Height= 8,
+    ExtraHeight = 0,
+    FontFamilyName = fontName,
+});
 sysDrawing.AddFonts(fonts);
 sysDrawing.DrawTo(DrawStrategy.IoTBdfFont, demoText, "results/sysDrawing.png");
 

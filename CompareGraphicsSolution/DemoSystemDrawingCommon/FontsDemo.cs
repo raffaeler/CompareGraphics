@@ -11,7 +11,7 @@ namespace DemoSystemDrawingCommon
     public class FontsDemo : IFontsDemo, IDisposable
     {
         private Bitmap? _bitmap;
-        private Dictionary<string, (IoTBdfFont font, FontInfo fontInfo)> _fonts = new();
+        private Dictionary<string, (IoTBdfFont? bdffont, Font? nativefont, FontInfo fontInfo)> _fonts = new();
 
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -65,14 +65,15 @@ namespace DemoSystemDrawingCommon
         {
             if (fontInfo.FontFamilyName != null)
             {
-                // unsupported for now
+                Font font = new Font(fontInfo.FontFamilyName, fontInfo.Height);
+                _fonts[fontInfo.FontFamilyName] = (default, font, fontInfo);
                 return;
             }
             else if (fontInfo.FontFileName != null)
             {
                 var bdf = IoTBdfFont.Load(fontInfo.FontFileName);
 
-                _fonts[fontInfo.FontFileName] = (bdf, fontInfo);
+                _fonts[fontInfo.FontFileName] = (bdf, default, fontInfo);
                 return;
             }
 
@@ -91,18 +92,20 @@ namespace DemoSystemDrawingCommon
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-
+            g.Clear(Color.White);
 
             int x = 10;
-            int top = 10;
-            int count = 0;
+            int y = 10;
             foreach (var f in _fonts.Values)
             {
                 var height = f.fontInfo.Height;// + f.fontInfo.ExtraHeight;
-                var y = top + count * (height + 10);
+                y = y + (height + 10);
                 var text = $"{f.fontInfo.Name} - {extraText}";
-                DrawText(x, y, text, f.font, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF);
-                count++;
+
+                if(f.bdffont != null)
+                    DrawText(x, y, text, f.bdffont, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF);
+                if (f.nativefont != null)
+                    g.DrawString(text, f.nativefont, Brushes.Black, x, y);
             }
 
             g.Flush();

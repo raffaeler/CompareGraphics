@@ -94,12 +94,11 @@ namespace DemoImageSharp
             if (_bitmap == null) return;
 
             int x = 10;
-            int top = 10;
-            int count = 0;
+            int y = 10;
             foreach (var f in _fonts.Values)
             {
                 var height = f.fontInfo.Height;// + f.fontInfo.ExtraHeight;
-                var y = top + count * (height + 10);
+                y = y + (height + 10);
 
                 var text = $"{f.fontInfo.Name} - {extraText}";
                 if (f.bdffont != null)
@@ -110,7 +109,6 @@ namespace DemoImageSharp
                     _bitmap.Mutate(x =>
                         x.DrawText(text, f.systemFont, Color.Black, point));
                 }
-                count++;
             }
 
             _bitmap.SaveAsPng(targetFilename);
